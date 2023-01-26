@@ -17,12 +17,12 @@ library(optparse)
 option_list <- list(
   make_option(c("--WIG"), type = "character", help = "Path to tumor WIG file. Required."),
   make_option(c("--NORMWIG"), type = "character", default=NULL, help = "Path to normal WIG file. Default: [%default]"),
-  make_option(c("--gcWig"), type = "character", help = "Path to GC-content WIG file; Required"),
-  make_option(c("--mapWig"), type = "character", default=NULL, help = "Path to mappability score WIG file. Default: [%default]"),
+  make_option(c("--gcWig"), type = "character", default="/scratch1/fs1/timley/fusions/jonathanztang/references/ichor.fa.gc.wig", help = "Path to GC-content WIG file; Required"),
+  make_option(c("--mapWig"), type = "character", default="/scratch1/fs1/timley/fusions/jonathanztang/references/ichor.fa.map.ws_16384.wig", help = "Path to mappability score WIG file. Default: [%default]"),
   make_option(c("--normalPanel"), type="character", default=NULL, help="Median corrected depth from panel of normals. Default: [%default]"),
   make_option(c("--exons.bed"), type = "character", default=NULL, help = "Path to bed file containing exon regions. Default: [%default]"),
   make_option(c("--id"), type = "character", default="test", help = "Patient ID. Default: [%default]"),
-  make_option(c("--centromere"), type="character", default=NULL, help = "File containing Centromere locations; if not provided then will use hg19 version from ichorCNA package. Default: [%default]"),
+  make_option(c("--centromere"), type="character", default="/storage1/fs1/timley/Active/aml_ppg/tmp/jonathanztang/breakpoint_reader/terra/for_git/data/201_gaps.bed", help = "File containing Centromere locations; if not provided then will use hg19 version from ichorCNA package. Default: [%default]"),
   make_option(c("--minMapScore"), type = "numeric", default=0.9, help="Include bins with a minimum mappability score of this value. Default: [%default]."),
   make_option(c("--rmCentromereFlankLength"), type="numeric", default=1e5, help="Length of region flanking centromere to remove. Default: [%default]"),
   make_option(c("--normal"), type="character", default="0.5", help = "Initial normal contamination; can be more than one value if additional normal initializations are desired. Default: [%default]"),
@@ -114,8 +114,9 @@ seqlevelsStyle(chrNormalize) <- genomeStyle
 seqlevelsStyle(chrTrain) <- genomeStyle
 
 # convert indexcov to WIG
+# TODO: bake into ichor or set reference
 if (endsWith(tumour_file, "indexcov.tar.gz")) {
-  source(paste0(libdir,"/scripts/indexcov_to_wig.R")
+  source("/scratch1/fs1/timley/fusions/jonathanztang/scripts/ichorCNA/scripts/indexcov_to_wig.R")
   tumour_file <- index_to_wig(tumour_file)
 }
 
@@ -350,7 +351,7 @@ for (n in normal){
   		mainName[counter] <- paste0(id, ", n: ", n, ", p: ", p, ", log likelihood: ", signif(hmmResults.cor$results$loglik[hmmResults.cor$results$iter], digits = 4))
   		plotGWSolution(hmmResults.cor, s=s, outPlotFile=outPlotFile, plotFileType=plotFileType, 
             logR.column = "logR", call.column = "Corrected_Call",
-  					 plotYLim=plotYLim, estimateScPrevalence=estimateScPrevalence, seqinfo=seqinfo, main=mainName[counter])
+  					plotYLim=plotYLim, estimateScPrevalence=estimateScPrevalence, seqinfo=seqinfo, main=mainName[counter])
     }
     iter <- hmmResults.cor$results$iter
     results[[counter]] <- hmmResults.cor
@@ -372,8 +373,8 @@ for (n in normal){
 elapsedTimeSolutions <- proc.time() - ptmTotalSolutions
 message("Total ULP-WGS HMM Runtime: ", format(elapsedTimeSolutions[3] / 60, digits = 2), " min.")
 
-### SAVE R IMAGE ###
-save.image(outImage)
+### SAVE R IMAGE ### TODO: Disabled
+#save.image(outImage)
 #save(tumour_copy, results, loglik, file=paste0(outDir,"/",id,".RData"))
 
 ### SELECT SOLUTION WITH LARGEST LIKELIHOOD ###

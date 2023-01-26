@@ -40,7 +40,7 @@ library('parallel')
 #    output = './ichor_out'
 #)
 #inputs <- parse_args(parser)
-OFFSETS_PATH <- '/scratch1/fs1/timley/fusions/jonathanztang/scripts/cnv/wig_offsets'
+OFFSETS_PATH <- '/scratch1/fs1/timley/fusions/jonathanztang/scripts/cnv/wig_sizes'
 OFFSETS <- read_table(OFFSETS_PATH)
 
 # FUNCTIONS --------------------------------------------------------------------
@@ -79,7 +79,7 @@ adjust_strings <- function(chr_string, offsets) {
     chromosome <- chr_string[1] %>%
     str_extract('chr[0-9, X, Y].?\\s') %>%
         str_replace(' ', '')
-    off <- offsets$value[offsets$name == chromosome]
+    off <- offsets$value[offsets$name == chromosome] - length(chr_string)
     chr_string <- c(chr_string, rep(1, off + 1))
     return(chr_string)
 }
@@ -136,4 +136,37 @@ index_to_wig <- function(file_path) {
     temp_wig <- tempfile(fileext = '.wig')
     write(wig, temp_wig)
     return(temp_wig)
+}
+
+# Rough batch function to convert a bunch of indexcov samples to wigs
+batch_i2w <- function(in_dir, out_dir) {
+    if (!dir.exists(out_dir)) {
+        dir.create(out_dir, recursive = TRUE)
+    }
+
+    sample_list <- in_dir %>% list.dirs %>% str_subset('NWD') %>% str_extract('NWD[0-9]*')
+    sample_list <- sample_list %>% paste0('./', ., '/indexcov.tar.gz')
+
+    cluster <- makeForkCluster(detectCores() - 1)
+    samples <- clusterMap(
+        cluster,
+        index_to_wig,
+        sample_list
+    )
+    stopCluster(cluster)
+
+    sample_table <- samples %>% unlist %>% enframe
+    sample_table$sample <- sample_table$name %>% str_extract('NWD[0-9]*')
+    
+    calls <- paste0(
+        'cp ',
+        sample_table$value,
+        ' ',
+        out_dir,
+        '/',
+        sample_table$sample,
+        '.wig'
+    )
+
+    lapply(calls, system)
 }
