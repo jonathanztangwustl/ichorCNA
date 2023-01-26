@@ -43,7 +43,7 @@ option_list <- list(
   make_option(c("--chrNormalize"), type="character", default="c(1:22)", help = "Specify chromosomes to normalize GC/mappability biases. Default: [%default]"),
   make_option(c("--chrTrain"), type="character", default="c(1:22)", help = "Specify chromosomes to estimate params. Default: [%default]"),
   make_option(c("--chrs"), type="character", default="c(1:22,\"X\")", help = "Specify chromosomes to analyze. Default: [%default]"),
-  make_option(c("--genomeBuild"), type="character", default="hg19", help="Geome build. Default: [%default]"),
+  make_option(c("--genomeBuild"), type="character", default="hg38", help="Geome build. Default: [%default]"),
   make_option(c("--genomeStyle"), type = "character", default = "NCBI", help = "NCBI or UCSC chromosome naming convention; use UCSC if desired output is to have \"chr\" string. [Default: %default]"),
   make_option(c("--normalizeMaleX"), type="logical", default=TRUE, help = "If male, then normalize chrX by median. Default: [%default]"),
   make_option(c("--minTumFracToCorrect"), type="numeric", default=0.1, help = "Tumor-fraction correction of bin and segment-level CNA if sample has minimum estimated tumor fraction. [Default: %default]"), 
@@ -112,6 +112,12 @@ chrNormalize <- as.character(eval(parse(text=opt$chrNormalize)));
 seqlevelsStyle(chrs) <- genomeStyle
 seqlevelsStyle(chrNormalize) <- genomeStyle
 seqlevelsStyle(chrTrain) <- genomeStyle
+
+# convert indexcov to WIG
+if (endsWith(tumour_file, 'indexcov.tar.gz')) {
+  source('/scratch1/fs1/timley/fusions/jonathanztang/scripts/cnv/indexcov_to_wig.R')
+  tumour_file <- index_to_wig(tumour_file)
+}
 
 ## load ichorCNA library or source R scripts
 if (!is.null(libdir) && libdir != "None"){
