@@ -6,6 +6,19 @@ library(ichorCNA)
 options(stringsAsFactors=FALSE, scipen=0)
 options(bitmapType='cairo')
 
+#opt <- list(
+#	gcWig = '/scratch1/fs1/timley/fusions/jonathanztang/references/ichor.fa.gc.wig',
+#	mapWig = '/scratch1/fs1/timley/fusions/jonathanztang/references/ichor.fa.map.ws_16384.wig',
+#	filelist = 'all_wigs.txt',
+#	outfile = 'ichor_pon',
+#	centromere = '/storage1/fs1/timley/Active/aml_ppg/tmp/jonathanztang/breakpoint_reader/terra/for_git/data/ichor_gaps.bed',
+#	genomeStyle = 'NCBI',
+#	chrs = "c(1:22,\"X\")",
+#	chrNormalize = "c(1:22)",
+#	maleChrXLogRThres = -0.80,
+#	method = 'median'
+#)
+#
 option_list <- list(
 	make_option(c("--gcWig"), type = "character", help = "GC Wig file for reference genome"),
 	make_option(c("--mapWig"), type = "character", default=NULL, help = "Mappabiliy Wig file for reference genome"),

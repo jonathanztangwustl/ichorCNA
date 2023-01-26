@@ -56,7 +56,8 @@ options(scipen=0, stringsAsFactors=F)
 # Test inputs
 opt <- list(
     inDir = '.',
-    outDir = '../analysis/ichortest/'
+    outDir = '../analysis/ichortest/',
+    normalPanel = '/scratch1/fs1/timley/fusions/jonathanztang/pharmu/ichor_pon.rds'
 )
 
 # Parse system calls
@@ -70,6 +71,8 @@ calls <- paste0(
     sample_list,
     "/indexcov.tar.gz --id ",
     sample_list,
+    " --normalPanel ",
+    opt$normalPanel,
     " --outDir ",
     opt$outDir
 )
@@ -80,3 +83,5 @@ clusterMap(cluster,
     calls
 )
 stopCluster(cluster)
+
+# TODO: Remove extra outputs
