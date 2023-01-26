@@ -114,8 +114,8 @@ seqlevelsStyle(chrNormalize) <- genomeStyle
 seqlevelsStyle(chrTrain) <- genomeStyle
 
 # convert indexcov to WIG
-if (endsWith(tumour_file, 'indexcov.tar.gz')) {
-  source('/scratch1/fs1/timley/fusions/jonathanztang/scripts/cnv/indexcov_to_wig.R')
+if (endsWith(tumour_file, "indexcov.tar.gz")) {
+  source(paste0(libdir,"/scripts/indexcov_to_wig.R")
   tumour_file <- index_to_wig(tumour_file)
 }
 
