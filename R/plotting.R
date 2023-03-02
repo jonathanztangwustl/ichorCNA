@@ -36,10 +36,10 @@ plotSolutions <- function(hmmResults.cor, tumour_copy, logR.column = "logR", cal
       outPlot <- paste0(outDir,"/",id,"/",id,"_CNA_chr",i)
       if (plotFileType == "png"){ 
         outPlot <- paste0(outPlot, ".png")
-        png(outPlot,width=15,height=5,units="in",res=300)
+        png(outPlot,width=10,height=5,units="in",res=300)
       }else{
         outPlot <- paste0(outPlot, ".pdf")
-        pdf(outPlot,width=15,height=5)
+        pdf(outPlot,width=10,height=5)
       }			
       par(mfrow=c(1,1))
       plotCNlogRByChr(hmmResults.cor$cna[[s]], segs=hmmResults.cor$results$segs[[s]], chr=i,
@@ -50,37 +50,40 @@ plotSolutions <- function(hmmResults.cor, tumour_copy, logR.column = "logR", cal
     }
 
     ### PLOT THE CORRECTION COMPARISONS ###
-    outPlotFile <- paste0(outDir,"/",id,"/",id,"_correct")
-    if (plotFileType == "png"){ 
-      outPlotFile <- paste0(outPlotFile, ".png")
-      png(outPlotFile,width=10,height=12,units="in",res=300)
-    }else{
-      outPlotFile <- paste0(outPlotFile, ".pdf")
-      pdf(outPlotFile,width=10,height=12)
-    }
-    plotCorrectionGenomeWide(tumour_copy[[s]], seqinfo = seqinfo, pch = ".")
-    dev.off()
+# TODO: DISABLED TO SAVE SPACE
+#    outPlotFile <- paste0(outDir,"/",id,"/",id,"_correct")
+#    if (plotFileType == "png"){ 
+#      outPlotFile <- paste0(outPlotFile, ".png")
+#      png(outPlotFile,width=10,height=12,units="in",res=300)
+#    }else{
+#      outPlotFile <- paste0(outPlotFile, ".pdf")
+#      pdf(outPlotFile,width=10,height=12)
+#    }
+#    plotCorrectionGenomeWide(tumour_copy[[s]], seqinfo = seqinfo, pch = ".")
+#    dev.off()
 
     ### PLOT THE BIAS ###
-    outPlotFile <- paste0(outDir,"/",id,"/",id,"_bias")
-    if (plotFileType == "png"){ 
-      outPlotFile <- paste0(outPlotFile, ".png")
-      png(outPlotFile,width=7,height=7,units="in",res=300)
-    }else{
-      outPlotFile <- paste0(outPlotFile, ".pdf")
-      pdf(outPlotFile,width=7,height=7)
-    }
-    try(plotBias(tumour_copy[[s]], pch = 20, cex = 0.5), silent=TRUE)
-    dev.off()
+# TODO: DISABLED TO SAVE SPACE
+#    outPlotFile <- paste0(outDir,"/",id,"/",id,"_bias")
+#    if (plotFileType == "png"){ 
+#      outPlotFile <- paste0(outPlotFile, ".png")
+#      png(outPlotFile,width=7,height=7,units="in",res=300)
+#    }else{
+#      outPlotFile <- paste0(outPlotFile, ".pdf")
+#      pdf(outPlotFile,width=7,height=7)
+#    }
+#    try(plotBias(tumour_copy[[s]], pch = 20, cex = 0.5), silent=TRUE)
+#    dev.off()
 
     ### PLOT TPDF ##
-    outPlotFile <- paste0(outDir,"/",id,"/",id,"_tpdf.pdf")
-    pdf(outPlotFile)
-    plotParam(mus = unique(hmmResults.cor$results$mus[, s, iter]), 
-              lambdas = hmmResults.cor$results$lambdas[, s, iter], 
-              subclone = hmmResults.cor$results$param$ct.sc.status,
-              nu = hmmResults.cor$results$param$nu, copy.states = 1:maxCN)
-    dev.off()
+# TODO: DISABLED TO SAVE SPACE
+#    outPlotFile <- paste0(outDir,"/",id,"/",id,"_tpdf.pdf")
+#    pdf(outPlotFile)
+#    plotParam(mus = unique(hmmResults.cor$results$mus[, s, iter]), 
+#              lambdas = hmmResults.cor$results$lambdas[, s, iter], 
+#              subclone = hmmResults.cor$results$param$ct.sc.status,
+#              nu = hmmResults.cor$results$param$nu, copy.states = 1:maxCN)
+#    dev.off()
 
   }
 }

@@ -22,9 +22,9 @@ option_list <- list(
   make_option(c("--normalPanel"), type="character", default=NULL, help="Median corrected depth from panel of normals. Default: [%default]"),
   make_option(c("--exons.bed"), type = "character", default=NULL, help = "Path to bed file containing exon regions. Default: [%default]"),
   make_option(c("--id"), type = "character", default="test", help = "Patient ID. Default: [%default]"),
-  make_option(c("--centromere"), type="character", default="/storage1/fs1/timley/Active/aml_ppg/tmp/jonathanztang/breakpoint_reader/terra/for_git/data/201_gaps.bed", help = "File containing Centromere locations; if not provided then will use hg19 version from ichorCNA package. Default: [%default]"),
+  make_option(c("--centromere"), type="character", default="/storage1/fs1/timley/Active/aml_ppg/tmp/jonathanztang/breakpoint_reader/terra/for_git/data/ichor_gaps.bed", help = "File containing Centromere locations; if not provided then will use hg19 version from ichorCNA package. Default: [%default]"),
   make_option(c("--minMapScore"), type = "numeric", default=0.9, help="Include bins with a minimum mappability score of this value. Default: [%default]."),
-  make_option(c("--rmCentromereFlankLength"), type="numeric", default=1e5, help="Length of region flanking centromere to remove. Default: [%default]"),
+  make_option(c("--rmCentromereFlankLength"), type="numeric", default=0, help="Length of region flanking centromere to remove. Default: [%default]"),
   make_option(c("--normal"), type="character", default="0.5", help = "Initial normal contamination; can be more than one value if additional normal initializations are desired. Default: [%default]"),
   make_option(c("--scStates"), type="character", default="NULL", help = "Subclonal states to consider. Default: [%default]"),
   make_option(c("--coverage"), type="numeric", default=NULL, help = "PICARD sequencing coverage. Default: [%default]"),
@@ -42,8 +42,8 @@ option_list <- list(
   make_option(c("--altFracThreshold"), type="numeric", default=0.05, help="Minimum proportion of bins altered required to estimate tumor fraction; if below this threshold, then will be assigned zero tumor fraction. Default: [%default]"),
   make_option(c("--chrNormalize"), type="character", default="c(1:22)", help = "Specify chromosomes to normalize GC/mappability biases. Default: [%default]"),
   make_option(c("--chrTrain"), type="character", default="c(1:22)", help = "Specify chromosomes to estimate params. Default: [%default]"),
-  make_option(c("--chrs"), type="character", default="c(1:22,\"X\")", help = "Specify chromosomes to analyze. Default: [%default]"),
-  make_option(c("--genomeBuild"), type="character", default="hg38", help="Geome build. Default: [%default]"),
+  make_option(c("--chrs"), type="character", default="c(1:22)", help = "Specify chromosomes to analyze. Default: [%default]"),
+  make_option(c("--genomeBuild"), type="character", default="hg19", help="Genome build. Default: [%default]"),
   make_option(c("--genomeStyle"), type = "character", default = "NCBI", help = "NCBI or UCSC chromosome naming convention; use UCSC if desired output is to have \"chr\" string. [Default: %default]"),
   make_option(c("--normalizeMaleX"), type="logical", default=TRUE, help = "If male, then normalize chrX by median. Default: [%default]"),
   make_option(c("--minTumFracToCorrect"), type="numeric", default=0.1, help = "Tumor-fraction correction of bin and segment-level CNA if sample has minimum estimated tumor fraction. [Default: %default]"), 
@@ -51,10 +51,10 @@ option_list <- list(
   make_option(c("--includeHOMD"), type="logical", default=FALSE, help="If FALSE, then exclude HOMD state. Useful when using large bins (e.g. 1Mb). Default: [%default]"),
   make_option(c("--txnE"), type="numeric", default=0.9999999, help = "Self-transition probability. Increase to decrease number of segments. Default: [%default]"),
   make_option(c("--txnStrength"), type="numeric", default=1e7, help = "Transition pseudo-counts. Exponent should be the same as the number of decimal places of --txnE. Default: [%default]"),
-  make_option(c("--plotFileType"), type="character", default="pdf", help = "File format for output plots. Default: [%default]"),
+  make_option(c("--plotFileType"), type="character", default="png", help = "File format for output plots. Default: [%default]"),
 	make_option(c("--plotYLim"), type="character", default="c(-2,2)", help = "ylim to use for chromosome plots. Default: [%default]"),
   make_option(c("--outDir"), type="character", default="./", help = "Output Directory. Default: [%default]"),
-  make_option(c("--libdir"), type = "character", default=NULL, help = "Script library path. Usually exclude this argument unless custom modifications have been made to the ichorCNA R package code and the user would like to source those R files. Default: [%default]")
+  make_option(c("--libdir"), type = "character", default="/scratch1/fs1/timley/fusions/jonathanztang/scripts/ichorCNA", help = "Script library path. Usually exclude this argument unless custom modifications have been made to the ichorCNA R package code and the user would like to source those R files. Default: [%default]")
 )
 parseobj <- OptionParser(option_list=option_list)
 opt <- parse_args(parseobj)
@@ -115,6 +115,7 @@ seqlevelsStyle(chrTrain) <- genomeStyle
 
 # convert indexcov to WIG
 # TODO: bake into ichor or set reference
+# TODO: can just use --libdir argument
 if (endsWith(tumour_file, "indexcov.tar.gz")) {
   source("/scratch1/fs1/timley/fusions/jonathanztang/scripts/ichorCNA/scripts/indexcov_to_wig.R")
   tumour_file <- index_to_wig(tumour_file)
@@ -158,7 +159,7 @@ if (is.null(centromere) || centromere == "None" || centromere == "NULL"){ # no c
 			package = "ichorCNA")
 }
 centromere <- read.delim(centromere,header=T,stringsAsFactors=F,sep="\t")
-save.image(outImage)
+#save.image(outImage)
 ## LOAD IN WIG FILES ##
 numSamples <- nrow(wigFiles)
 
@@ -245,7 +246,7 @@ if (length(tumour_copy) >= 2) {
     valid <- valid & tumour_copy[[i]]$valid 
   } 
 }
-save.image(outImage)
+#save.image(outImage)
 
 ### RUN HMM ###
 ## store the results for different normal and ploidy solutions ##
@@ -403,11 +404,12 @@ for(i in 1:length(ind)) {
   if (i == length(ind)){
   	turnDevOff <- TRUE
   }
-  plotGWSolution(hmmResults.cor, s=s, outPlotFile=outPlotFile, plotFileType="pdf", 
-                     logR.column = "logR", call.column = "Corrected_Call",
-                     plotYLim=plotYLim, estimateScPrevalence=estimateScPrevalence, 
-                     seqinfo = seqinfo,
-                     turnDevOn = turnDevOn, turnDevOff = turnDevOff, main=mainName[ind[i]])
+#  TODO: Disabled to reduce output (all_sols plot)
+#  plotGWSolution(hmmResults.cor, s=s, outPlotFile=outPlotFile, plotFileType="pdf", 
+#                     logR.column = "logR", call.column = "Corrected_Call",
+#                     plotYLim=plotYLim, estimateScPrevalence=estimateScPrevalence, 
+#                     seqinfo = seqinfo,
+#                     turnDevOn = turnDevOn, turnDevOff = turnDevOff, main=mainName[ind[i]])
 }
 
 hmmResults.cor <- results[[ind[1]]]
