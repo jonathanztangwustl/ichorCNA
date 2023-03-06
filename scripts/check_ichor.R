@@ -7,7 +7,7 @@ library('optparse')
 # Inputs =======================================================================
 option_list <- list(
     make_option(
-        c("--sample_dir"),
+        c("--in_dir"),
         type = "character",
         help = "Target directory. Required."
     ),
@@ -20,8 +20,14 @@ option_list <- list(
     make_option(
         c("--id"),
         type = "character",
-        default = "segs",
+        default = "all_calls",
         help = "Output file name. Default: [%default]"
+    ),
+    make_option(
+        c("--type"),
+        type = "character",
+        default = "segs",
+        help = "Whether to check CNA or SEG output. Default: [%default]"
     ),
     make_option(
         c("--genes"),
@@ -44,10 +50,14 @@ if (opt$genes %>% is.null) {
 }
 gene_list %<>% toupper
 
-cna_list <- list.files(opt$sample_dir, pattern = 'cna')
+cna_list <- list.files(opt$in_dir, pattern = 'cna')
+cna_list <- paste0(opt$in_dir, '/', cna_list)
+
+seg_list <- list.files(opt$in_dir, pattern = 'seg.txt')
+seg_list <- paste0(opt$in_dir, '/', seg_list)
 
 # TODO: Add a second layer of processing to run through post-correction calling
-#seg_list <- list.files(opt$sample_dir, pattern = '.seg.txt')
+#seg_list <- list.files(opt$in_dir, pattern = '.seg.txt')
 
 # Load data ====================================================================
 # Load target gene info 
@@ -58,7 +68,8 @@ gene_targ$chr %<>% str_replace('chr', '')
 gene_targ$chr %<>% as.numeric
 
 # Overlaps =====================================================================
-call_cnv <- function(cna_path, genes = gene_targ) {
+# Raw CNA files ----------------------------------------------------------------
+call_cnv_cna <- function(cna_path, genes = gene_targ) {
     # Load cna file
     cna <- read.table(cna_path, header = TRUE) %>% as_tibble
     cna_names <- cna %>% names %>% str_replace('NWD[0-9].*\\.', '')
@@ -86,23 +97,67 @@ call_cnv <- function(cna_path, genes = gene_targ) {
         call_list[[gene_row$gene]]$gene <- gene_row$gene
     }
     
-    # Collapse and return calls. Note: may need to tweak sample naming
+    # Collapse and return calls
     calls <- call_list %>% bind_rows
-    calls$sample <- cna_path %>% str_replace('.cna.seg', '')
+    calls$sample <- cna_path %>% str_extract('NWD[0-9]*')
     return(calls)
 }
 
 # Run batch with parallelization
-batch_call_cnv <- function(cna_list, genes = gene_targ) {
-    all_calls <- mclapply(cna_list, call_cnv) %>% bind_rows
+batch_call_cna <- function(cna_list, genes = gene_targ) {
+    all_calls <- mclapply(cna_list, call_cnv_cna) %>% bind_rows
+    return(all_calls)
+}
+
+# Final seg files --------------------------------------------------------------
+call_cnv_seg <- function(seg_path, genes = gene_targ) {
+    # Load seg file
+    seg <- read.table(seg_path, header = TRUE) %>% as_tibble
+
+    # Remove normal events
+    seg %<>% filter(
+        (chrom %in% genes$chr) &
+        (call != 'NEUT')
+    )
+
+    # Create empty call list
+    call_list <- vector('list', nrow(genes))
+    names(call_list) <- genes$gene
+
+    # Iteratively call overlaps
+    for (gene_i in 1:nrow(genes)) {
+        gene_row <- genes[gene_i, ]
+        call_list[[gene_row$gene]] <- seg %>% filter(
+            (chrom == gene_row$chr) &
+            ((end > gene_row$start) &
+            (start < gene_row$end))
+        )
+        call_list[[gene_row$gene]]$gene <- gene_row$gene
+    }
+
+    # Collapse and return calls
+    calls <- call_list %>% bind_rows
+    calls$sample <- seg_path %>% str_extract('NWD[0-9]*')
+    return(calls)
+}
+
+# Run batch with parallelization
+batch_call_seg <- function(seg_list, genes = gene_targ) {
+    all_calls <- mclapply(seg_list, call_cnv_seg) %>% bind_rows
     return(all_calls)
 }
 
 # Script =======================================================================
-output <- batch_call_cnv(cna_list)
+if (opt$type == "segs") {
+    output <- batch_call_seg(seg_list)
+} else if (opt$type == "cna") {
+    output <- batch_call_cna(cna_list)
+}
+
 write.table(
     output,
-    file = paste0(opt$out_dir, '/', opt$id, '.txt'),
+    file = paste0(opt$out_dir, "/", opt$id, ".txt"),
     quote = FALSE,
-    row.names = FALSE
+    row.names = FALSE,
+    append = TRUE
 )
