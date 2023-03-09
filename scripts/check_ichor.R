@@ -56,9 +56,6 @@ cna_list <- paste0(opt$in_dir, '/', cna_list)
 seg_list <- list.files(opt$in_dir, pattern = 'seg.txt')
 seg_list <- paste0(opt$in_dir, '/', seg_list)
 
-# TODO: Add a second layer of processing to run through post-correction calling
-#seg_list <- list.files(opt$in_dir, pattern = '.seg.txt')
-
 # Load data ====================================================================
 # Load target gene info 
 gene_ref <- '/storage1/fs1/timley/Active/aml_ppg/tmp/jonathanztang/breakpoint_reader/terra/for_git/data/gene_reference.bed'
@@ -137,7 +134,6 @@ call_cnv_seg <- function(seg_path, genes = gene_targ) {
 
     # Collapse and return calls
     calls <- call_list %>% bind_rows
-    calls$sample <- seg_path %>% str_extract('NWD[0-9]*')
     return(calls)
 }
 
