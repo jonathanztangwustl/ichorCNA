@@ -17,8 +17,8 @@ library(optparse)
 option_list <- list(
   make_option(c("--WIG"), type = "character", help = "Path to tumor WIG file. Required."),
   make_option(c("--NORMWIG"), type = "character", default=NULL, help = "Path to normal WIG file. Default: [%default]"),
-  make_option(c("--gcWig"), type = "character", default="/scratch1/fs1/timley/fusions/jonathanztang/references/ichor.fa.gc.wig", help = "Path to GC-content WIG file; Required"),
-  make_option(c("--mapWig"), type = "character", default="/scratch1/fs1/timley/fusions/jonathanztang/references/ichor.fa.map.ws_16384.wig", help = "Path to mappability score WIG file. Default: [%default]"),
+  make_option(c("--gcWig"), type = "character", default="/storage1/fs1/timley/Active/aml_ppg/tmp/jonathanztang/breakpoint_reader/terra/mutect2/references/ichor.fa.gc.wig", help = "Path to GC-content WIG file; Required"),
+  make_option(c("--mapWig"), type = "character", default="/storage1/fs1/timley/Active/aml_ppg/tmp/jonathanztang/breakpoint_reader/terra/mutect2/references/ichor.fa.map.ws_16384.wig", help = "Path to mappability score WIG file. Default: [%default]"),
   make_option(c("--normalPanel"), type="character", default=NULL, help="Median corrected depth from panel of normals. Default: [%default]"),
   make_option(c("--exons.bed"), type = "character", default=NULL, help = "Path to bed file containing exon regions. Default: [%default]"),
   make_option(c("--id"), type = "character", default="test", help = "Patient ID. Default: [%default]"),

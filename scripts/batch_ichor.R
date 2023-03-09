@@ -38,7 +38,7 @@ calls <- paste0(
     opt$outDir
 )
 if (opt$usepon) {
-    calls <- paste0(calls, " --normalPanel /scratch1/fs1/timley/fusions/jonathanztang/pharmu/ichor_mutect_pon_median.rds ")
+    calls <- paste0(calls, " --normalPanel /storage1/fs1/timley/Active/aml_ppg/tmp/jonathanztang/breakpoint_reader/terra/outputs/pharmu/ichor_mutect_pon_median.rds ")
 }
 
 cluster <- makeForkCluster(detectCores() - 1)
