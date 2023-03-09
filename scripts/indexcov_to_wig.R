@@ -40,7 +40,7 @@ library('parallel')
 #    output = './ichor_out'
 #)
 #inputs <- parse_args(parser)
-OFFSETS_PATH <- '/scratch1/fs1/timley/fusions/jonathanztang/scripts/cnv/wig_sizes'
+OFFSETS_PATH <- '/storage1/fs1/timley/Active/aml_ppg/tmp/jonathanztang/breakpoint_reader/terra/scripts/cnv/wig_sizes'
 OFFSETS <- read_table(OFFSETS_PATH)
 
 # FUNCTIONS --------------------------------------------------------------------

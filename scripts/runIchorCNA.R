@@ -117,7 +117,7 @@ seqlevelsStyle(chrTrain) <- genomeStyle
 # TODO: bake into ichor or set reference
 # TODO: can just use --libdir argument
 if (endsWith(tumour_file, "indexcov.tar.gz")) {
-  source("/scratch1/fs1/timley/fusions/jonathanztang/scripts/ichorCNA/scripts/indexcov_to_wig.R")
+  source("/storage1/fs1/timley/Active/aml_ppg/tmp/jonathanztang/breakpoint_reader/terra/scripts/ichorCNA/scripts/indexcov_to_wig.R")
   tumour_file <- index_to_wig(tumour_file)
 }
 
