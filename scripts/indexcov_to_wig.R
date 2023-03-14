@@ -144,9 +144,11 @@ batch_i2w <- function(in_dir, out_dir) {
         dir.create(out_dir, recursive = TRUE)
     }
 
+    # Collect sample list
     sample_list <- in_dir %>% list.dirs %>% str_subset('NWD') %>% str_extract('NWD[0-9]*')
     sample_list <- sample_list %>% paste0('./', ., '/indexcov.tar.gz')
 
+    # Convert in parallel
     cluster <- makeForkCluster(detectCores() - 1)
     samples <- clusterMap(
         cluster,
@@ -155,9 +157,11 @@ batch_i2w <- function(in_dir, out_dir) {
     )
     stopCluster(cluster)
 
+    # Neatly reorganize list of converted WIG samples in /tmp for system calls
     sample_table <- samples %>% unlist %>% enframe
     sample_table$sample <- sample_table$name %>% str_extract('NWD[0-9]*')
-    
+
+    # Prepare system calls to copy /tmp WIG files to output directory
     calls <- paste0(
         'cp ',
         sample_table$value,
