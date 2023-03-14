@@ -112,10 +112,10 @@ call_cnv_seg <- function(seg_path, genes = gene_targ) {
     seg <- read.table(seg_path, header = TRUE) %>% as_tibble
 
     # Remove normal events
-    seg %<>% filter(
-        (chrom %in% genes$chr) &
-        (call != 'NEUT')
-    )
+    seg <- seg[
+        (seg$chrom %in% genes$chr) &
+        (seg$call != 'NEUT'),
+    ]
 
     # Create empty call list
     call_list <- vector('list', nrow(genes))
@@ -124,11 +124,11 @@ call_cnv_seg <- function(seg_path, genes = gene_targ) {
     # Iteratively call overlaps
     for (gene_i in 1:nrow(genes)) {
         gene_row <- genes[gene_i, ]
-        call_list[[gene_row$gene]] <- seg %>% filter(
-            (chrom == gene_row$chr) &
-            ((end > gene_row$start) &
-            (start < gene_row$end))
-        )
+        call_list[[gene_row$gene]] <- seg[
+            (seg$chrom == gene_row$chr) &
+            (seg$end > gene_row$start) &
+            (seg$start < gene_row$end),
+        ]
         call_list[[gene_row$gene]]$gene <- gene_row$gene
     }
 
