@@ -102,7 +102,10 @@ call_gene <- function(calls, gene = goi) {
         ]
         call_list[[gene_i]]$gene <- gene_info$gene[gene_i]
     }
-    calls <- call_list %>% bind_rows %>% arrange(ID, chrom, loc.start)
+    calls <- call_list %>%
+        bind_rows %>%
+        filter(waviness < 0.05) %>%
+        arrange(ID, chrom, loc.start)
     return(calls)
 }
 
@@ -124,7 +127,7 @@ inputs_list <- list(
     make_option(
         c('--gene', '-g'),
         type = 'character',
-        default = goi,
+        default = 'DNMT3A,TET2,ASXL1,PPM1D,TP53,ATM,SRSF2,SF3B1,JAK2,GNB1',
         help = 'Gene or genes to search for, separated by commas (e.g. DNMT3A,TET2,JAK2). Optional. Default: [%default]'
     ),
     make_option(
@@ -142,7 +145,7 @@ inputs_list <- list(
     make_option(
         c('--save_calls', '-s'),
         action = 'store_true',
-        default = FALSE,
+        default = TRUE,
         help = 'Add this option to save all calls as well as gene calls.'
     )
 )

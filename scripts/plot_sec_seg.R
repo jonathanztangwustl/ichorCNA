@@ -49,7 +49,7 @@ GAPS$end <- as.numeric(GAPS$end)
 
 # Plot single sample
 GENE_REF <- '/storage1/fs1/timley/Active/aml_ppg/tmp/jonathanztang/breakpoint_reader/terra/for_git/data/gene_reference.bed'
-plot_raw <- function(seg_data, gene = 'DNMT3A', out_dir = '../plots', cov_type = 'indexcov', mean_thresh = -0.1, bin_thresh = 11) {
+plot_raw <- function(seg_data, gene = 'DNMT3A', out_dir = './plots', cov_type = 'indexcov', mean_thresh = 0.05, bin_thresh = 10) {
     points <- seg_data$data %>% as_tibble
     names(points) <- c('chrom', 'maploc', 'log2')
     segments <- seg_data$output %>% as_tibble
@@ -73,7 +73,7 @@ plot_raw <- function(seg_data, gene = 'DNMT3A', out_dir = '../plots', cov_type =
             ) +
         ylim(-2, 2) +
         geom_segment(data = (GAPS %>% filter(chr == 'chr2')), aes(x = start, xend = end, y = -0.5, yend = -0.5), color = 'green') +
-        geom_text(data = segments, aes(x = loc.start, y = seg.mean, label = ifelse((seg.mean <= mean_thresh & num.mark >= bin_thresh), '*', '')), color = 'pink', nudge_y = -0.075) +
+        geom_text(data = segments, aes(x = loc.start, y = seg.mean, label = ifelse((abs(seg.mean) >= mean_thresh & num.mark >= bin_thresh), '*', '')), color = 'dodgerblue', nudge_y = -0.075) +
         geom_vline(xintercept = gene_info$start, color = 'blue', size = 0.1) +
         geom_vline(xintercept = gene_info$end, color = 'blue', size = 0.1) +
         geom_hline(yintercept = 0, color = 'black', size = 0.1) +
@@ -103,7 +103,7 @@ plot_raw <- function(seg_data, gene = 'DNMT3A', out_dir = '../plots', cov_type =
 
 
 # SCRIPT =======================================================================
-samples <- list.files()
+samples <- list.files(pattern = 'correctedDepth')
 
 segs <- batch_seg_cd(samples)
 
