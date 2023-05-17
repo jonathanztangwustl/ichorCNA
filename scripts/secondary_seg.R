@@ -13,7 +13,32 @@ ref <- read.table(
     col.names = c('chromosome', 'start', 'end', 'name', 'gene', 'strand')
 ) %>% as_tibble
 
+goi <- c('DNMT3A', 'TET2', 'ASXL1', 'PPM1D', 'TP53', 'ATM', 'SRSF2', 'SF3B1',
+    'JAK2', 'GNB1')
+
 # FUNCTIONS ====================================================================
+# Chunk median
+chunk_med <- function(in_set_data, chunk) {
+    return(in_set_data$log2[chunk] %>% median(na.rm = T))
+}
+
+# Test waviness
+wavy <- function(set_path) {
+    set_id <- set_path %>% str_extract('NWD[0-9]*')
+    set_data <- read.table(set_path, header = T) %>% as_tibble
+    names(set_data) <- c('chr', 'start', 'end', 'log2')
+    set_bins <- split(
+        1:nrow(set_data),
+        ceiling(
+            seq_along(1:nrow(set_data))/100
+        )
+    )
+    waviness <- lapply(set_bins, chunk_med, in_set_data = set_data) %>%
+        unlist %>% diff # diff helps with large CNVs that have non-0 baselines
+    median_dev <- waviness %>% sd
+    return(median_dev)
+}
+
 # Perform DNAcopy CBS on a single sample
 seg_cd <- function(set_path) {
     set_id <- set_path %>% str_extract('NWD[0-9]*')
@@ -34,6 +59,7 @@ seg_cd <- function(set_path) {
         undo.splits = 'sdund',
         undo.SD = 1.5
     )
+    segs$output$waviness <- wavy(set_path)
     return(segs)
 }
 
@@ -50,7 +76,9 @@ batch_seg_cd <- function(set_list) {
 }
 
 # Pull calls with minimum bin size and absolute segment mean
-call_cd <- function(segs, bins = 13, seg_mean = 0.1) {
+# Previous thresholds were bin 13, seg_mean 0.1
+# Theoretical thresholds should be bins 10 (163 kb) and seg 0.05 (3.5% VAF)
+call_cd <- function(segs, bins = 10, seg_mean = 0.05) {
     seg_tb <- segs %>% lapply(`[[`, 2) %>% bind_rows %>% as_tibble
     calls <- seg_tb[
         (seg_tb$num.mark > bins) &
@@ -60,7 +88,7 @@ call_cd <- function(segs, bins = 13, seg_mean = 0.1) {
 }
 
 # Pull calls that overlap genes input 
-call_gene <- function(calls, gene = 'DNMT3A') {
+call_gene <- function(calls, gene = goi) {
     gene %<>% toupper
     gene_info <- ref[(ref$gene %in% gene), ]
     gene_info$chromosome %<>% str_replace('chr', '')
@@ -74,7 +102,7 @@ call_gene <- function(calls, gene = 'DNMT3A') {
         ]
         call_list[[gene_i]]$gene <- gene_info$gene[gene_i]
     }
-    calls <- call_list %>% bind_rows
+    calls <- call_list %>% bind_rows %>% arrange(ID, chrom, loc.start)
     return(calls)
 }
 
@@ -102,13 +130,13 @@ inputs_list <- list(
     make_option(
         c('--bins', '-b'),
         type = 'integer',
-        default = 13,
+        default = 10,
         help = 'Minimum bin threshold for calling segments. Optional. Default: [%default]'
     ),
     make_option(
         c('--mean', '-m'),
         type = 'double',
-        default = 0.1,
+        default = 0.05,
         help = 'Minimum segment mean change to call segments. Optional. Default: [%default]'
     ),
     make_option(
