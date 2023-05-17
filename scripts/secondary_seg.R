@@ -124,7 +124,7 @@ inputs_list <- list(
     make_option(
         c('--gene', '-g'),
         type = 'character',
-        default = 'DNMT3A',
+        default = goi,
         help = 'Gene or genes to search for, separated by commas (e.g. DNMT3A,TET2,JAK2). Optional. Default: [%default]'
     ),
     make_option(
@@ -142,6 +142,7 @@ inputs_list <- list(
     make_option(
         c('--save_calls', '-s'),
         action = 'store_true',
+        default = FALSE,
         help = 'Add this option to save all calls as well as gene calls.'
     )
 )
