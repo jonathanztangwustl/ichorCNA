@@ -50,13 +50,17 @@ GAPS$end <- as.numeric(GAPS$end)
 # Plot single sample
 GENE_REF <- '/storage1/fs1/timley/Active/aml_ppg/tmp/jonathanztang/breakpoint_reader/terra/for_git/data/gene_reference.bed'
 plot_raw <- function(seg_data, gene = 'DNMT3A', out_dir = './plots', cov_type = 'indexcov', mean_thresh = 0.05, bin_thresh = 10) {
-    points <- seg_data$data %>% as_tibble
-    names(points) <- c('chrom', 'maploc', 'log2')
-    segments <- seg_data$output %>% as_tibble
     gene_ref <- read.table(GENE_REF, sep = '\t', header = FALSE, col.names = c('chromosome', 'start', 'end', 'name', 'zero', 'strand'))
     names(gene_ref) <- c('chromosome', 'start', 'end', 'label', 'name', 'strand')
     gene <- toupper(gene)
     gene_info <- gene_ref[gene_ref$name == gene, ]
+    if (nrow(gene_info) > 1) {stop('Only one gene can be specified.')}
+
+    chrom_lim <- gene_info$chromosome %>% str_replace('chr', '') %>% as.numeric
+
+    points <- seg_data$data %>% as_tibble %>% filter(chrom %in% chrom_lim)
+    names(points) <- c('chrom', 'maploc', 'log2')
+    segments <- seg_data$output %>% as_tibble %>% filter(chrom %in% chrom_lim)
     set_name <- segments$ID %>% unique
 
     out_plot <- ggplot(data = points, aes(x = maploc, y = log2)) +
@@ -72,13 +76,13 @@ plot_raw <- function(seg_data, gene = 'DNMT3A', out_dir = './plots', cov_type = 
             color = 'red'
             ) +
         ylim(-2, 2) +
-        geom_segment(data = (GAPS %>% filter(chr == 'chr2')), aes(x = start, xend = end, y = -0.5, yend = -0.5), color = 'green') +
+        geom_segment(data = (GAPS %>% filter(chr %in% gene_info$chromosome)), aes(x = start, xend = end, y = -0.5, yend = -0.5), color = 'green') +
         geom_text(data = segments, aes(x = loc.start, y = seg.mean, label = ifelse((abs(seg.mean) >= mean_thresh & num.mark >= bin_thresh), '*', '')), color = 'dodgerblue', nudge_y = -0.075) +
         geom_vline(xintercept = gene_info$start, color = 'blue', size = 0.1) +
         geom_vline(xintercept = gene_info$end, color = 'blue', size = 0.1) +
         geom_hline(yintercept = 0, color = 'black', size = 0.1) +
         ggtitle(paste(set_name, gene, cov_type)) + xlab('Base Pair') + ylab('log2')
-    ggsave(paste0(out_dir, '/', set_name, '_', cov_type, '_segments.png'), out_plot, device = 'png')
+    ggsave(paste0(out_dir, '/', set_name, '_', gene_info$chromosome, '_', gene_info$name, '_segments.png'), out_plot, device = 'png')
 }
 
 # Plot batch of segment data
