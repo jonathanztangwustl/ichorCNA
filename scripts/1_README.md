@@ -1,0 +1,12 @@
+This is a folder that includes both original and modified scripts for IchorCNA.
+- `batch_CD.R`: Runs a batch job to correct biases and output correctedDepth.txt files.
+- `batch_ichor.R`: Runs a batch job to run IchorCNA's full workflow (including segmentation).
+- `call_ichor_segs.R`: Calls segments from IchorCNA's segmentation outputs.
+- `check_ichor.R`: Testing/troubleshooting script.
+- `createPanelOfNormals.R`: Original IchorCNA script to generate a median-based panel of normals.
+- `indexcov_to_wig.R`: Converts indexcov output files (indexcov.tar.gz) to WIG files for IchorCNA input.
+- `plot_sec_seg.R`: Used to plot IchorCNA+DNAcopy results.
+- `README.md`: IchorCNA's original README.
+- `run_CD.R`: Runs a single job to generate correctedDepth.txt file.
+- `runIchorCNA.R`: Runs a single job to perform IchorCNA's full algorith including segmentation. Modified from original to include indexcov_to_wig.R.
+- `secondary_seg.R`: Runs DNAcopy segmentation on IchorCNA's correctedDepth.txt files.
